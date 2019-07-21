@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const querystring = require('querystring');
 
 const http = require('http');
 
@@ -8,9 +9,6 @@ const port = 4000;
 
 function handler(request, response) {
     var url = request.url;
-
-    console.log(url);
-
 
     if (url === "/") {
         response.writeHead(200, {"Content-Type": "text/html"});
@@ -23,21 +21,20 @@ function handler(request, response) {
                 response.end(file);
             }
         });
-
-    } else if (url === "/girl") {
-        var message = 'Hello girl';
-        response.writeHead(200, {"Content-Type": "text/html"});
-        response.write(message);
-        response.end();
-    } else if (url === '/node') {
-        var message = 'Hello node';
-        response.writeHead(200, {"Content-Type": "text/html"});
-        response.write(message);
-        response.end();
+    // } else if (url === "/girl") {
+    //     var message = 'Hello girl';
+    //     response.writeHead(200, {"Content-Type": "text/html"});
+    //     response.write(message);
+    //     response.end();
+    // } else if (url === '/node') {
+    //     var message = 'Hello node';
+    //     response.writeHead(200, {"Content-Type": "text/html"});
+    //     response.write(message);
+    //     response.end();
     } else if (url === "/main.css") {
-        const filepath = path.join(__dirname, '..', '/public', url);
+        let filepath = path.join(__dirname, '..', '/public', url);
         response.writeHead(200, {"Content-Type": "text/html"});
-        fs.readFile(filepath, function(error, file) {
+        fs.readFile(filepath, (error, file) => {
             if (error) {
                 console.log(error);
                 response.end();
@@ -47,9 +44,11 @@ function handler(request, response) {
             }
         });
     } else if (url === '/img/image.jpg') {
-        const filepath = path.join(__dirname, '..', '/public/', url);
+        let filepath = path.join(__dirname, '..', '/public/', url);
+
         response.writeHead(200, {"Content-Type": "text/html"});
-        fs.readFile(filepath, function(error, file) {
+
+        fs.readFile(filepath, (error, file) => {
             if (error) {
                 console.log(error);
                 response.end();
@@ -58,7 +57,22 @@ function handler(request, response) {
                 response.end(file);
             }
         });
+    } else if (url === '/create-post') {
+        console.log("sending data to ", url);
+
+        response.writeHead(302, {Location: '/'});
+
+        var allTheData = '';
+        request.on('data', (chunkOfData) => {
+            allTheData += chunkOfData;
+        });
+        request.on('end', () => {
+            let convertedData = querystring.parse(allTheData);
+            console.log('converted data = ', convertedData);
+            response.end();
+        });
     }
+
 }
 
 const server = http.createServer(handler);
